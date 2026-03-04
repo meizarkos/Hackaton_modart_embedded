@@ -1,5 +1,6 @@
 #include "mqtt.h"
 #include "wifiSide.h"
+#include "globale.h"
 
 // MQTT broker IP and port
 const char* mqtt_server = "helpother.fr";
@@ -37,6 +38,7 @@ void reconnect() {
     }
   }
 }
+
 void keepAliveMqtt() {
   if (!client.connected() && isConnectedToWifi()) {
     reconnect();
