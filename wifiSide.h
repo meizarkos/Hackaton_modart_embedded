@@ -8,5 +8,6 @@ extern bool isTryingToConnectToWifi;
 
 bool isConnectedToWifi();
 bool initWifi(String ssid, String password);
+void getSizeBustInitial(String id);
 
 #endif

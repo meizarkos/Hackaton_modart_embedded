@@ -1,6 +1,4 @@
-const int lm35Pin = 32;
-const int resistPin = 34;
-const int cardiacPin = 33;
+const int lm35Pin = 34;
 const int accSDA = 27;
 const int accSCL = 26;
 unsigned long lastMQTTTime = 0;
@@ -15,8 +13,8 @@ const String wifiPassword = "R3s3@u-G3S";
 #include "globale.h"
 #include <Wire.h>
 
-
 MPU6050 mpu;
+
 TaskHandle_t cardiacTaskHandle = NULL;
 
 void setup() {
@@ -32,7 +30,7 @@ void setup() {
   // Configuration ADC ESP32
   analogReadResolution(12);                 // 0–4095
   analogSetPinAttenuation(lm35Pin, ADC_11db); // ~0–3.3V
-  analogSetPinAttenuation(resistPin, ADC_11db);
+  analogSetPinAttenuation(sizePin, ADC_11db);
   analogSetPinAttenuation(cardiacPin, ADC_11db);
   initWifi(wifiSSID, wifiPassword);
   initMqttClient();
@@ -46,6 +44,7 @@ void setup() {
     &cardiacTaskHandle,
     1                       // Core 1 (good choice)
   );
+  getSizeBustInitial(idOfEmbedded);
 }
 
 void loop() {
@@ -53,14 +52,15 @@ void loop() {
   float magnitude = accelerometerMagnitude(mpu);
 
   float temperatureC = readTemperature(lm35Pin) + 13.0;
-  int resistValue = analogRead(resistPin);
+  float sizeValue = readSize(sizePin) - analogValueForSizeInitial;
+  sizeValue /= 25;
 
   unsigned long now = millis();
-  if (now - lastMQTTTime >= mqttInterval) {
+  if(now - lastMQTTTime >= mqttInterval) {
     lastMQTTTime = now;
 
     sendMqttMessage("temperature/"+ idOfEmbedded, "{\"temp\":\"" + String(temperatureC, 1) + "\"}");
-    sendMqttMessage("sizeBust/"+ idOfEmbedded, "{\"sizeBust\":\"" + String(resistValue) + "\"}");
+    sendMqttMessage("sizeBust/"+ idOfEmbedded, "{\"sizeBust\":\"" + String(sizeValue) + "\"}");
     sendMqttMessage("cardiac/"+ idOfEmbedded, "{\"cardiac\":\"" + String(globalBPM, 1) + "\"}");
     sendMqttMessage("accel/"+ idOfEmbedded, "{\"accel\":\"" + String(magnitude, 1) + "\"}");
   }

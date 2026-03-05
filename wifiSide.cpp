@@ -1,7 +1,10 @@
 #include "wifiSide.h"
+#include "sensor.h"
+#include "globale.h"
+#include <ArduinoJson.h>
 
 extern bool isTryingToConnectToWifi = false;
-String url = "https://helpother.fr/";
+String url = "http://localhost:3000/api/";
 
 bool isConnectedToWifi(){
   return WiFi.status() == WL_CONNECTED;
@@ -28,15 +31,23 @@ bool initWifi(String ssid, String password){
   }
 }
 
-void getSizeBust(String id) {
+void getSizeBustInitial(String id) {
   if (WiFi.status() == WL_CONNECTED) {
     HTTPClient http;
-    String apiUrl = url + "getSizeBust/" + id;
+    String apiUrl = url + "sizeBust/manual";
     http.begin(apiUrl);       
     int httpResponseCode = http.GET(); 
 
     if (httpResponseCode > 0) {
       String payload = http.getString();
+      StaticJsonDocument<200> doc;
+      DeserializationError error = deserializeJson(doc, payload);
+      if (error) {
+          Serial.println("JSON parsing failed");
+          return;
+      }
+      sizeInCmInitial = doc["sizeBust"];
+      getAnalogValueFirstSize();
       Serial.println("HTTP Response code: " + String(httpResponseCode));
       Serial.println("Payload: " + payload);
     } else {

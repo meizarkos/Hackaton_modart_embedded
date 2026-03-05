@@ -6,5 +6,7 @@
 float readTemperature(int pin);
 void cardiacTask(void * parameter);
 float accelerometerMagnitude(MPU6050 mpu);
+void getAnalogValueFirstSize();
+float readSize(int pin);
 
 #endif

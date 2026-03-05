@@ -18,6 +18,31 @@ float readTemperature(int pin) {
   return voltage * 100.0;
 }
 
+void getAnalogValueFirstSize() {
+  long sum = 0;
+
+  for (int i = 0; i < 10; i++) {
+    sum += analogRead(sizePin); // Assuming sizePin is defined as 34
+    unsigned long currentTime = millis();
+    while (millis() - currentTime < sampleInterval) {}
+  }
+
+  analogValueForSizeInitial = sum / 10.0;
+}
+
+float readSize(int pin) {
+  long sum = 0;
+
+  for (int i = 0; i < 10; i++) {
+    sum += analogRead(pin); // Assuming sizePin is defined as 32
+    unsigned long currentTime = millis();
+    while (millis() - currentTime < sampleInterval) {}
+  }
+
+  float avg = sum / 10.0;
+  return avg;
+}
+
 void cardiacValue() {
   const int threshold = 3100;
   const int timeMeasure = 15000;
@@ -31,7 +56,7 @@ void cardiacValue() {
 
   while(millis() - timeStart < timeMeasure) {
     for (int i = 0; i < 10; i++) {
-      sum += analogRead(33);
+      sum += analogRead(cardiacPin);
       currentTime = millis();
       while (millis() - currentTime < sampleInterval) {}
     }
@@ -40,7 +65,7 @@ void cardiacValue() {
     Serial.println(avgCardiacValue);**/
     if (avgCardiacValue > threshold) {
       beatCount++;
-      while(analogRead(33) > threshold) {}
+      while(analogRead(cardiacPin) > threshold) {}
     }
     sum = 0;
     avgCardiacValue = 0;
@@ -53,7 +78,7 @@ void cardiacValue() {
 void cardiacTask(void * parameter) {
   for (;;) {
     cardiacValue();
-    vTaskDelay(5 / portTICK_PERIOD_MS);  // 5ms delay
+    vTaskDelay(3000 / portTICK_PERIOD_MS);  // 5ms delay
   }
 }
 
@@ -72,6 +97,6 @@ float accelerometerMagnitude(MPU6050 mpu) {
   }
 
   sum /= 10.0;
-  Serial.println("Accelerometer Magnitude: " + String(sum));
+  //Serial.println("Accelerometer Magnitude: " + String(sum));
   return sum;
 }
